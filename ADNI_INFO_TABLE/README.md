@@ -13,3 +13,7 @@ This table includes the imaging acquisition parameters such as TR, TE and Slice 
 - ADNIMERGE_Last.csv 
 
 This table includes the demographic, diagnosis and visit history among ADNI1/GO, ADNI2 and ADNI3.
+
+- MRILIST.csv
+
+This table includes all the image ids of images, you can use this table to find all the images of one visit.
