@@ -2,8 +2,12 @@ from matplotlib import gridspec
 from nilearn.plotting import plot_surf_stat_map,plot_surf_roi
 from nilearn.plotting.surf_plotting import _check_views,_check_hemispheres,_get_colorbar_and_data_ranges,_colorbar_from_array
 import itertools
+import os
+from ..templates import get_surface_file
 
-def plot_surf_fsa4(left_data, right_data, if_roi=False,
+surf_size = [5124, 10242,]
+                      
+def plot_surf_nilearn(left_data, right_data, if_roi=False, surf_name = 'fsaverage4',
                      hemispheres=['left', 'right'], bg_on_data=False,
                      inflate=False, views=['lateral', 'medial'],
                      output_file=None, title=None, colorbar=True, width = 5,
@@ -15,20 +19,12 @@ def plot_surf_fsa4(left_data, right_data, if_roi=False,
                 'plot_img_on_surf does not accept '
                 f'{arg} as an argument')
     base_dir = os.path.dirname(os.path.abspath(__file__))
-    surf = {
-        'left': base_dir + "/templates/fsaverage/fsaverage4/tpl-fsaverage_den-3k_hemi-L_inflated.surf.gii",
-        'right': base_dir + "/templates/fsaverage/fsaverage4/tpl-fsaverage_den-3k_hemi-R_inflated.surf.gii",
-    }
-    surf_mesh = {}
-    surf_mesh['curv_left'] = base_dir + "/templates/fsaverage/fsaverage4/tpl-fsaverage_den-3k_hemi-L_desc-sulc_midthickness.shape.gii"
-    surf_mesh['curv_right'] = base_dir + "/templates/fsaverage/fsaverage4/tpl-fsaverage_den-3k_hemi-R_desc-sulc_midthickness.shape.gii"
-    texture = {
-        'left': left_data,
-        'right': right_data
-    }
-
+    surfs = get_surface_file(surf_name)
+    
     modes = _check_views(views)
     hemis = _check_hemispheres(hemispheres)
+
+        
     if(overlay_roi is not None):
         overlay = {}
         overlay['left'] = overlay_roi[:2562]
