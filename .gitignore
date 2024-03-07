@@ -1,1 +1,9 @@
-templates/data/atlases/
+*
+!*/
+!*.c
+!*.h
+!*.py
+!*.R
+!*.m
+!*.ipynb
+!*.gitignore

@@ -7,32 +7,52 @@ import numpy as np
 import itertools
 import os
 import nibabel as nib
-from ..templates import get_surface_file
+from templates import get_surface_file
 
 surf_size = [5124, 10242]
 base_dir = os.path.dirname(os.path.abspath(__file__))
+
+VALID_VIEWS = "anterior", "posterior", "medial", "lateral", "dorsal", "ventral"
+VALID_HEMISPHERES = "L", "R"
+def _check_hemisphere_is_valid(hemi):
+    return hemi in VALID_HEMISPHERES
 def check_hemi(hemispheres):
-    pass
+    """Check whether the hemispheres passed to in plot_img_on_surf are \
+    correct.
+
+    hemispheres : list
+        Any combination of 'left' and 'right'.
+
+    """
+    invalid_hemis = [
+        not _check_hemisphere_is_valid(hemi) for hemi in hemispheres
+    ]
+    if any(invalid_hemis):
+        raise ValueError(
+            "Invalid hemispheres definition!\n"
+            f"Got: {str(np.array(hemispheres)[invalid_hemis])}\n"
+            f"Supported values are: {str(VALID_HEMISPHERES)}"
+        )
+    return hemispheres
 
 def plot_surf_nilearn_single(left_data, right_data, if_roi=False, surf_name = 'fsaverage4',surf_type= 'pial',
-                     hemispheres=['left', 'right'], bg_on_data=False,
+                     hemispheres=['L', 'R'], bg_on_data=False,
                      inflate=False, views=['lateral', 'medial'],
                      output_file=None, title=None, colorbar=True, width = 5,
                      vmin=None, vmax=None, threshold=None,overlay_roi = None,
                      symmetric_cbar='auto', cmap='cold_hot', **kwargs):
 
     plot_func = plot_surf_roi if if_roi is True else plot_surf_stat_map
-    surfs = get_surface_file(surf_name)._asdict()[surf_type]
-    backgrounds = get_surface_file(surf_name)._asdict()['sulc']
+    surfs = get_surface_file(surf_name)[surf_type]._asdict()
+    backgrounds = get_surface_file(surf_name)['sulc']._asdict()
     hemi_nilearn = {'L':'left','R':'right'}
     texture = {
         'L': left_data,
         'R': right_data
     }
-    surf_vertex_num = nib.load(surfs['L']).agg_data().squeeze().shape[0]
-
+    surf_vertex_num = nib.load(surfs['L']).agg_data()[0].shape[0]
     modes = _check_views(views)
-    hemis = _check_hemispheres(hemispheres)
+    hemis = check_hemi(hemispheres)
     if(overlay_roi is not None):
         overlay = {}
         overlay['L'] = overlay_roi[:surf_vertex_num]
@@ -119,10 +139,10 @@ def plot_surf_nilearn_row(left_data, right_data, if_roi = False, surf_name = 'fs
                      symmetric_cbar='auto', cmap='cold_hot', **kwargs):
     
     plot_func = plot_surf_roi if if_roi is True else plot_surf_stat_map
-    surfs = get_surface_file(surf_name)._asdict()[surf_type]
-    backgrounds = get_surface_file(surf_name)._asdict()['sulc']
+    surfs = get_surface_file(surf_name)[surf_type]._asdict()
+    backgrounds = get_surface_file(surf_name)['sulc']._asdict()
     hemi_nilearn = {'L':'left','R':'right'}
-    surf_vertex_num = nib.load(surfs['L']).agg_data().squeeze().shape[0]
+    surf_vertex_num = nib.load(surfs['L']).agg_data()[0].shape[0]
     if(overlay_roi is not None):
         overlay = {}
         overlay['L'] = overlay_roi[:surf_vertex_num]
@@ -148,7 +168,7 @@ def plot_surf_nilearn_row(left_data, right_data, if_roi = False, surf_name = 'fs
 
     for pt in range(num_brain):
         _, _, vmin, vmax = _get_colorbar_and_data_ranges(
-            np.concatenate([texture[pt]['left'],texture[pt]['right']]),
+            np.concatenate([texture[pt]['L'],texture[pt]['R']]),
             vmin=vmin,
             vmax=vmax,
             symmetric_cbar=symmetric_cbar,
